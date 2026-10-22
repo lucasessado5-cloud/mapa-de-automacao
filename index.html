@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mapa de Automação · Lucas Essado</title>
+<meta name="description" content="Uma skill no Claude que faz as perguntas certas e mostra o que dá pra automatizar na sua empresa, por onde começar e quanto tempo isso devolve.">
+<meta property="og:title" content="Mapa de Automação · Lucas Essado">
+<meta property="og:description" content="Descubra em 15 minutos o que dá pra automatizar na sua empresa.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@500&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --petroleo: #0F2A2E; --petroleo-2: #17393E; --coral: #FF8A6B; --coral-escuro: #E8704F;
+    --gelo: #EAF2EF; --branco: #FFFFFF; --texto: #0F2A2E; --suave: #4A6366; --linha: #D3E0DC;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--gelo); color: var(--texto); font: 400 17px/1.55 "Public Sans", system-ui, sans-serif; }
+  a { color: inherit; }
+  .topo { background: var(--petroleo); color: var(--gelo); padding: 40px 16px 56px; }
+  .caixa { max-width: 640px; margin: 0 auto; }
+  .marca { font: 500 12px/1 "IBM Plex Mono", monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--coral); margin: 0 0 22px; }
+  h1 { font: 700 clamp(32px, 8vw, 46px)/1.08 "Fraunces", Georgia, serif; margin: 0 0 16px; letter-spacing: -.01em; }
+  h1 em { font-style: normal; color: var(--coral); }
+  .sub { font-size: 18px; color: #C9DAD5; margin: 0; }
+  .lista { list-style: none; padding: 0; margin: 28px 0 0; display: grid; gap: 12px; }
+  .lista li { display: flex; gap: 12px; align-items: flex-start; color: var(--gelo); }
+  .lista b { color: var(--coral); font: 600 13px/1.9 "IBM Plex Mono", monospace; min-width: 26px; }
+  main { padding: 0 16px 48px; }
+  .cartao { background: var(--branco); border-radius: 18px; padding: 26px 20px; margin: -32px auto 0; max-width: 640px; box-shadow: 0 14px 40px rgba(15,42,46,.12); }
+  h2 { font: 700 26px/1.15 "Fraunces", Georgia, serif; margin: 0 0 6px; }
+  .nota { color: var(--suave); font-size: 15px; margin: 0 0 20px; }
+  label { display: block; font-weight: 600; font-size: 15px; margin: 14px 0 6px; }
+  label span { font-weight: 400; color: var(--suave); }
+  input[type=text], input[type=email], input[type=tel] {
+    width: 100%; font: inherit; padding: 13px 14px; border: 1.5px solid var(--linha); border-radius: 12px; background: #FBFDFC; color: var(--texto);
+  }
+  input:focus { outline: none; border-color: var(--petroleo); box-shadow: 0 0 0 3px rgba(255,138,107,.35); }
+  .aceite { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; font-size: 14px; color: var(--suave); margin-top: 18px; }
+  .aceite input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--petroleo); flex: none; }
+  .botao { display: inline-flex; justify-content: center; align-items: center; gap: 8px; width: 100%; margin-top: 20px; padding: 16px 18px; border: 0; border-radius: 14px; background: var(--coral); color: var(--petroleo); font: 700 18px/1 "Public Sans", sans-serif; cursor: pointer; text-decoration: none; }
+  .botao:hover { background: var(--coral-escuro); }
+  .botao[disabled] { opacity: .6; cursor: wait; }
+  .botao.secundario { background: var(--petroleo); color: var(--gelo); }
+  .botao.secundario:hover { background: var(--petroleo-2); }
+  .erro { color: #B3261E; font-size: 14px; margin: 10px 0 0; min-height: 1em; }
+  .escondido { position: absolute; left: -9999px; }
+  [hidden] { display: none !important; }
+  .ok { display: flex; gap: 10px; align-items: center; background: #E3F3EC; color: #145A3C; padding: 12px 14px; border-radius: 12px; font-weight: 600; margin-bottom: 18px; }
+  .abas { display: flex; gap: 6px; background: var(--gelo); padding: 5px; border-radius: 12px; margin: 6px 0 18px; }
+  .aba { flex: 1; border: 0; background: transparent; padding: 10px 6px; border-radius: 9px; font: 600 14px/1.2 "Public Sans", sans-serif; color: var(--suave); cursor: pointer; }
+  .aba[aria-selected=true] { background: var(--branco); color: var(--petroleo); box-shadow: 0 2px 8px rgba(15,42,46,.1); }
+  .passos { counter-reset: p; list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
+  .passos li { counter-increment: p; display: grid; grid-template-columns: 30px 1fr; gap: 10px; }
+  .passos li::before { content: counter(p); width: 30px; height: 30px; border-radius: 50%; background: var(--petroleo); color: var(--gelo); font: 600 14px/30px "IBM Plex Mono", monospace; text-align: center; }
+  code, .cmd { font: 500 13.5px/1.5 "IBM Plex Mono", monospace; }
+  .cmd { display: block; background: var(--petroleo); color: var(--gelo); padding: 12px 14px; border-radius: 10px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; margin-top: 8px; }
+  .dica { font-size: 14px; color: var(--suave); margin: 16px 0 0; }
+  .rodape { max-width: 640px; margin: 28px auto 0; font-size: 13px; color: var(--suave); }
+  .rodape a { color: var(--petroleo); }
+</style>
+</head>
+<body>
+<header class="topo">
+  <div class="caixa">
+    <p class="marca">Lucas Essado · Neurix</p>
+    <h1>O que dá pra <em>automatizar</em> na sua empresa?</h1>
+    <p class="sub">Eu criei uma skill no Claude que faz as perguntas certas, uma de cada vez, e te entrega um mapa do que automatizar primeiro.</p>
+    <ul class="lista">
+      <li><b>01</b><span>Uma conversa de 15 minutos sobre o dia a dia da sua empresa</span></li>
+      <li><b>02</b><span>As tarefas repetidas que mais comem tempo, com horas e reais por mês</span></li>
+      <li><b>03</b><span>O top 3 pra começar e o primeiro passo desta semana</span></li>
+    </ul>
+  </div>
+</header>
+
+<main>
+  <section class="cartao" id="formulario">
+    <h2>Receba a skill</h2>
+    <p class="nota">Preencha e a skill aparece aqui mesmo, com o passo a passo.</p>
+    <form id="form" novalidate>
+      <label for="nome">Nome</label>
+      <input id="nome" name="nome" type="text" autocomplete="name" required>
+      <label for="email">E-mail</label>
+      <input id="email" name="email" type="email" autocomplete="email" inputmode="email" required>
+      <label for="telefone">WhatsApp <span>(com DDD)</span></label>
+      <input id="telefone" name="telefone" type="tel" autocomplete="tel" inputmode="tel" placeholder="(16) 99999-9999" required>
+      <label for="empresa">Empresa <span>(opcional)</span></label>
+      <input id="empresa" name="empresa" type="text" autocomplete="organization">
+      <input class="escondido" name="site" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <label class="aceite"><input id="consentimento" type="checkbox" required>
+        <span>Aceito receber a skill e conteúdos do Lucas Essado e da Neurix por e-mail e WhatsApp. Posso pedir pra sair quando quiser.</span></label>
+      <button class="botao" id="enviar" type="submit">Quero meu mapa →</button>
+      <p class="erro" id="erro" role="alert"></p>
+    </form>
+  </section>
+
+  <section class="cartao" id="material" hidden style="margin-top:0">
+    <div class="ok">✓ Pronto! Escolha como usar:</div>
+    <div class="abas" role="tablist">
+      <button class="aba" role="tab" aria-selected="true" data-aba="prompt">Mais fácil</button>
+      <button class="aba" role="tab" aria-selected="false" data-aba="skill">Skill no Claude</button>
+      <button class="aba" role="tab" aria-selected="false" data-aba="code">Claude Code</button>
+    </div>
+
+    <div data-painel="prompt">
+      <h2>Em 1 minuto, sem instalar nada</h2>
+      <p class="nota">Funciona no Claude e também no ChatGPT.</p>
+      <ol class="passos">
+        <li><div>Toque no botão pra copiar o prompt.
+          <button class="botao" id="copiar" type="button">Copiar prompt</button></div></li>
+        <li><div>Abra o <a href="https://claude.ai/new" target="_blank" rel="noopener">Claude</a> (ou o <a href="https://chatgpt.com/" target="_blank" rel="noopener">ChatGPT</a>), cole e envie.</div></li>
+        <li><div>Responda as perguntas. No fim, você recebe o seu Mapa de Automação.</div></li>
+      </ol>
+      <p class="dica">Dica: responda com números (quantas vezes por dia, quanto tempo leva). O mapa fica muito mais preciso.</p>
+    </div>
+
+    <div data-painel="skill" hidden>
+      <h2>Instalar como skill no Claude</h2>
+      <p class="nota">Fica salva na sua conta e você usa sempre que quiser.</p>
+      <ol class="passos">
+        <li><div>Baixe o arquivo da skill.
+          <a class="botao secundario" href="mapa-de-automacao.zip" download>Baixar skill (.zip)</a></div></li>
+        <li><div>No <a href="https://claude.ai/settings/capabilities" target="_blank" rel="noopener">Claude</a>, vá em <b>Configurações → Capacidades</b> e confira se <b>Execução de código</b> está ligada.</div></li>
+        <li><div>Na parte de <b>Skills</b>, toque em <b>Enviar skill</b> e escolha o arquivo baixado (não precisa descompactar).</div></li>
+        <li><div>Abra uma conversa nova e escreva: <code>Quero fazer o mapa de automação da minha empresa</code></div></li>
+      </ol>
+      <p class="dica">Skills ainda são novidade e o caminho no menu pode mudar. Se não achar, use a aba "Mais fácil".</p>
+    </div>
+
+    <div data-painel="code" hidden>
+      <h2>Para quem usa Claude Code</h2>
+      <p class="nota">Cole isto no Claude Code e ele instala sozinho:</p>
+      <span class="cmd" id="cmdCode"></span>
+      <button class="botao secundario" id="copiarCode" type="button">Copiar comando</button>
+      <p class="dica">Depois é só escrever <code>/mapa-de-automacao</code> numa conversa nova.</p>
+    </div>
+  </section>
+
+  <p class="rodape">Seus dados ficam só com o Lucas Essado e a Neurix, para enviar a skill e conteúdos. Para corrigir ou apagar, fale no <a href="https://wa.me/5516993080960?text=Oi%20Lucas%2C%20quero%20sair%20da%20lista%20do%20Mapa%20de%20Automa%C3%A7%C3%A3o" target="_blank" rel="noopener">WhatsApp</a>.</p>
+</main>
+
+<script>
+  // URL do App da Web do Google Apps Script (Implantar > Nova implantação). Grava na planilha "Leads · Mapa de Automação".
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwNoUNb7SNeJd3Q2BnSsLXfGoMw_fn9XfMmvrAVMzxb1QeyWhwufI9Cy1fJ9Vig95N_dg/exec";
+
+  const $ = s => document.querySelector(s);
+  const params = new URLSearchParams(location.search);
+  const base = location.href.replace(/[?#].*$/, "").replace(/index\.html$/, "");
+  $("#cmdCode").textContent = `Baixe ${base}mapa-de-automacao.zip e descompacte em ~/.claude/skills/ (vai criar a pasta mapa-de-automacao). Depois confirme que o arquivo SKILL.md está lá.`;
+
+  // quem já preencheu neste aparelho vai direto pro material
+  try { if (localStorage.getItem("mapa_ok")) mostrarMaterial(); } catch (e) {}
+
+  $("#form").addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const f = ev.target, erro = $("#erro");
+    const nome = f.nome.value.trim(), email = f.email.value.trim(), tel = f.telefone.value.replace(/\D/g, "");
+    if (!nome) return (erro.textContent = "Coloque seu nome.");
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return (erro.textContent = "Confira o e-mail.");
+    if (tel.length < 10) return (erro.textContent = "Coloque o WhatsApp com DDD.");
+    if (!$("#consentimento").checked) return (erro.textContent = "Marque a caixa de aceite para receber a skill.");
+    erro.textContent = "";
+    const btn = $("#enviar"); btn.disabled = true; btn.textContent = "Enviando…";
+    const dados = new URLSearchParams({
+      nome, email, telefone: (tel.length <= 11 ? "55" : "") + tel, empresa: f.empresa.value.trim(), site: f.site.value,
+      consentimento: "sim", origem: params.get("origem") || "instagram-mapa",
+      utm_source: params.get("utm_source") || "", utm_campaign: params.get("utm_campaign") || ""
+    });
+    try {
+      // no-cors: o Apps Script grava a linha; a página não precisa ler a resposta
+      await fetch(APPS_SCRIPT_URL, { method: "POST", mode: "no-cors", body: dados });
+    } catch (e) { console.warn("não consegui gravar", e); }
+    try { localStorage.setItem("mapa_ok", "1"); } catch (e) {}
+    mostrarMaterial();
+  });
+
+  function mostrarMaterial() {
+    $("#formulario").hidden = true;
+    $("#material").hidden = false;
+    $("#material").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  document.querySelectorAll(".aba").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll(".aba").forEach(x => x.setAttribute("aria-selected", x === b));
+    document.querySelectorAll("[data-painel]").forEach(p => (p.hidden = p.dataset.painel !== b.dataset.aba));
+  }));
+
+  async function copiar(texto, botao, rotulo) {
+    try { await navigator.clipboard.writeText(texto); }
+    catch (e) { const t = document.createElement("textarea"); t.value = texto; document.body.appendChild(t); t.select(); document.execCommand("copy"); t.remove(); }
+    botao.textContent = "Copiado ✓"; setTimeout(() => (botao.textContent = rotulo), 2500);
+  }
+  // carrega antes: no iPhone a cópia precisa acontecer no mesmo toque, sem esperar download
+  let prompt = "";
+  fetch("prompt.txt").then(r => r.text()).then(t => (prompt = t));
+  $("#copiar").addEventListener("click", e => {
+    if (!prompt) { e.currentTarget.textContent = "Carregando… toque de novo"; return; }
+    copiar(prompt, e.currentTarget, "Copiar prompt");
+  });
+  $("#copiarCode").addEventListener("click", e => copiar($("#cmdCode").textContent, e.currentTarget, "Copiar comando"));
+</script>
+</body>
+</html>
